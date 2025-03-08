@@ -1,0 +1,150 @@
+//Practico TAD
+//Luis Mateo Aguirre Soliz
+//07-03-25
+
+using System;
+using System.Collections.Generic;
+
+public class Vector
+{
+    public int Longitud { get; private set; }
+    public List<int> Elementos { get; private set; }
+
+    public Vector(int longitud)
+    {
+        Longitud = longitud;
+        Elementos = new List<int>(new int[longitud]);
+    }
+
+    public void InsertarElemento(int posicion, int valor)
+    {
+        if (posicion < 0 || posicion >= Longitud)
+        {
+            throw new ArgumentOutOfRangeException(nameof(posicion), "La posición esta fuera del rango del vector.");
+        }
+        InsertarElementoRecursivo(posicion, valor);
+    }
+
+    private void InsertarElementoRecursivo(int posicion, int valor)
+    {
+        // Caso base: si la posición es 0, asignamos el valor directamente
+        if (posicion == 0)
+        {
+            Elementos[posicion] = valor;
+            return;
+        }
+        // Caso inductivo: llamamos recursivamente con la posición anterior
+        InsertarElementoRecursivo(posicion - 1, Elementos[posicion - 1]);
+        Elementos[posicion] = valor;
+    }
+
+    public void EliminarElemento(int posicion)
+    {
+        if (posicion < 0 || posicion >= Longitud)
+        {
+            throw new ArgumentOutOfRangeException(nameof(posicion), "La posición esta fuera del rango del vector.");
+        }
+        EliminarElementoRecursivo(posicion);
+        Longitud--;
+        Elementos.RemoveAt(Longitud);
+    }
+
+    private void EliminarElementoRecursivo(int posicion)
+    {
+        // Caso base: si la posición es la última, no hacemos nada
+        if (posicion == Longitud - 1)
+        {
+            return;
+        }
+        // Caso inductivo: movemos el siguiente elemento a la posición actual
+        Elementos[posicion] = Elementos[posicion + 1];
+        EliminarElementoRecursivo(posicion + 1);
+    }
+
+    public bool CompararVectores(Vector vector1, Vector vector2)
+    {
+        if (vector1.Longitud != vector2.Longitud)
+        {
+            return false;
+        }
+        for (int i = 0; i < vector1.Longitud; i++)
+        {
+            if (vector1.Elementos[i] != vector2.Elementos[i])
+            {
+                return false;
+            }
+        }
+        Console.WriteLine("Los vectores son iguales");
+        return true;
+    }
+
+    public void UnionVector(Vector vector2)
+    {
+        if (Longitud + vector2.Longitud > Elementos.Capacity)
+        {
+            Elementos.Capacity = Longitud + vector2.Longitud;
+        }
+        for (int i = 0; i < vector2.Longitud; i++)
+        {
+            Elementos.Add(vector2.Elementos[i]);
+            Console.WriteLine("Elemento aniadido: " + vector2.Elementos[i]);
+        }
+    }
+
+    public void Subconjunto(Vector vector2)
+    {
+        bool esSubconjunto = true;
+        for (int i = 0; i < vector2.Longitud; i++)
+        {
+            if (!Elementos.Contains(vector2.Elementos[i]))
+            {
+                esSubconjunto = false;
+                break;
+            }
+        }
+        if (esSubconjunto)
+        {
+            Console.WriteLine("El vector 2 es un subconjunto del vector 1");
+        }
+        else
+        {
+            Console.WriteLine("El vector 2 no es un subconjunto del vector 1");
+        }
+    }
+
+    public void EliminarDuplicados(Vector vector1, Vector vector2)
+    {
+        for (int i = 0; i < vector1.Longitud; i++)
+        {
+            for (int j = 0; j < vector2.Longitud; j++)
+            {
+                if (vector1.Elementos[i] == vector2.Elementos[j])
+                {
+                    vector2.Elementos.RemoveAt(j);
+                    Console.WriteLine("Elemento duplicado eliminado: " + vector1.Elementos[i]);
+                    j--; 
+                }
+            }
+        }
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Vector vector = new Vector(10) { Elementos = { 23, 45, 67, 89, 13, 2, 4, 56, 99, 100 } };
+        Vector vector1 = new Vector(5) { Elementos = { 62, 45, 1 } };
+        Vector vector2 = new Vector(5) { Elementos = { 2, 74, 81, 13, 32 } };
+        vector1.InsertarElemento(2, 10);
+        vector2.EliminarElemento(2);
+        vector2.CompararVectores(vector1, vector2);
+        vector1.UnionVector(vector2);
+        vector1.Subconjunto(vector2);
+        vector1.EliminarDuplicados(vector1, vector2);
+
+        foreach (var elemento in vector.Elementos)
+        {
+            Console.WriteLine(elemento);
+        }
+    }

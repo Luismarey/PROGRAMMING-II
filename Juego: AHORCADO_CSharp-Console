@@ -1,0 +1,79 @@
+// Juego del Ahorcado en C#
+// Luis Mateo Aguirre Soliz
+using System;
+using System.Collections.Generic;
+
+class Ahorcado
+{
+    static Random random = new Random();
+    static List<string> palabras = new List<string> { "PROGRAMACION", "DESARROLLO", "SOFTWARE", "COMPUTADORA", "INTELIGENCIA" };
+    static int puntos = 0; // Variable para acumular puntos del jugador
+    
+    // Función recursiva para seleccionar una palabra aleatoria de la lista
+    static string SeleccionarPalabra(int index = -1)
+    {
+        if (index == -1)
+            index = random.Next(palabras.Count);
+        
+        return palabras[index];
+    }
+
+    static void Main()
+    {
+        string palabraSecreta = SeleccionarPalabra(); // Palabra a adivinar
+        char[] palabraAdivinada = new string('_', palabraSecreta.Length).ToCharArray(); // Inicializa la palabra oculta con guiones bajos
+        int intentosMaximos = 6; // Número máximo de intentos antes de perder
+        int intentosFallidos = 0; // Contador de intentos fallidos
+        HashSet<char> letrasIngresadas = new HashSet<char>(); // Conjunto para almacenar las letras ingresadas
+        
+        Console.WriteLine("¡Bienvenido al juego del Ahorcado!");
+        
+        while (intentosFallidos < intentosMaximos && new string(palabraAdivinada) != palabraSecreta)
+        {
+            Console.WriteLine($"\nPalabra: {new string(palabraAdivinada)}");
+            Console.WriteLine($"Intentos restantes: {intentosMaximos - intentosFallidos}");
+            Console.Write("Ingrese una letra: ");
+            char letra = char.ToUpper(Console.ReadKey().KeyChar);
+            Console.WriteLine();
+
+            // Validar si la letra es válida o ya fue ingresada
+            if (!char.IsLetter(letra) || letrasIngresadas.Contains(letra))
+            {
+                Console.WriteLine("\nLetra inválida o ya ingresada. Intente nuevamente.");
+                continue;
+            }
+
+            letrasIngresadas.Add(letra); // Agregar la letra al conjunto de ingresadas
+            
+            if (palabraSecreta.Contains(letra))
+            {
+                // Reemplazar los guiones bajos por la letra correcta en la palabra adivinada
+                for (int i = 0; i < palabraSecreta.Length; i++)
+                {
+                    if (palabraSecreta[i] == letra)
+                    {
+                        palabraAdivinada[i] = letra;
+                    }
+                }
+            }
+            else
+            {
+                intentosFallidos++; // Incrementar intentos fallidos si la letra no está en la palabra
+                Console.WriteLine("\n¡Letra incorrecta!");
+            }
+        }
+
+        Console.WriteLine();
+        if (new string(palabraAdivinada) == palabraSecreta)
+        {
+            Console.WriteLine($"¡Felicidades! Adivinaste la palabra: {palabraSecreta}");
+            puntos += 10; // Sumar puntos por adivinar la palabra
+        }
+        else
+        {
+            Console.WriteLine($"Perdiste. La palabra era: {palabraSecreta}");
+        }
+
+        Console.WriteLine($"Puntos acumulados: {puntos}"); // Mostrar los puntos obtenidos
+    }
+}

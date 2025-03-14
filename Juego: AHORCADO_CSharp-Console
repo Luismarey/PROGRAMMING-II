@@ -1,5 +1,5 @@
 // Juego del Ahorcado en C#
-// Luis Mateo Aguirre Soliz
+// Desarrollado por Luis Mateo Aguirre Soliz
 using System;
 using System.Collections.Generic;
 
@@ -18,6 +18,21 @@ class Ahorcado
         return palabras[index];
     }
 
+    // Función para dibujar el ahorcado según el número de intentos fallidos
+    static void DibujarAhorcado(int intentosFallidos)
+    {
+        string[] dibujo = {
+            "\n  +---+\n      |\n      |\n      |\n     ===", // 0 fallos
+            "\n  +---+\n  O   |\n      |\n      |\n     ===", // 1 fallo
+            "\n  +---+\n  O   |\n  |   |\n      |\n     ===", // 2 fallos
+            "\n  +---+\n  O   |\n /|   |\n      |\n     ===", // 3 fallos
+            "\n  +---+\n  O   |\n /|\  |\n      |\n     ===", // 4 fallos
+            "\n  +---+\n  O   |\n /|\  |\n /    |\n     ===", // 5 fallos
+            "\n  +---+\n  O   |\n /|\  |\n / \  |\n     ==="  // 6 fallos (pierde)
+        };
+        Console.WriteLine(dibujo[intentosFallidos]);
+    }
+
     static void Main()
     {
         string palabraSecreta = SeleccionarPalabra(); // Palabra a adivinar
@@ -26,12 +41,21 @@ class Ahorcado
         int intentosFallidos = 0; // Contador de intentos fallidos
         HashSet<char> letrasIngresadas = new HashSet<char>(); // Conjunto para almacenar las letras ingresadas
         
+        Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine("¡Bienvenido al juego del Ahorcado!");
+        Console.ResetColor();
         
         while (intentosFallidos < intentosMaximos && new string(palabraAdivinada) != palabraSecreta)
         {
+            DibujarAhorcado(intentosFallidos);
+            Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine($"\nPalabra: {new string(palabraAdivinada)}");
+            Console.ResetColor();
+
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"Intentos restantes: {intentosMaximos - intentosFallidos}");
+            Console.ResetColor();
+
             Console.Write("Ingrese una letra: ");
             char letra = char.ToUpper(Console.ReadKey().KeyChar);
             Console.WriteLine();
@@ -39,7 +63,9 @@ class Ahorcado
             // Validar si la letra es válida o ya fue ingresada
             if (!char.IsLetter(letra) || letrasIngresadas.Contains(letra))
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("\nLetra inválida o ya ingresada. Intente nuevamente.");
+                Console.ResetColor();
                 continue;
             }
 
@@ -59,21 +85,32 @@ class Ahorcado
             else
             {
                 intentosFallidos++; // Incrementar intentos fallidos si la letra no está en la palabra
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("\n¡Letra incorrecta!");
+                Console.ResetColor();
             }
         }
 
         Console.WriteLine();
+        DibujarAhorcado(intentosFallidos);
         if (new string(palabraAdivinada) == palabraSecreta)
         {
+            Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine($"¡Felicidades! Adivinaste la palabra: {palabraSecreta}");
+            Console.ResetColor();
             puntos += 10; // Sumar puntos por adivinar la palabra
         }
         else
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"Perdiste. La palabra era: {palabraSecreta}");
+            Console.ResetColor();
         }
 
+        Console.ForegroundColor = ConsoleColor.Magenta;
         Console.WriteLine($"Puntos acumulados: {puntos}"); // Mostrar los puntos obtenidos
+        Console.ResetColor();
     }
 }
+
+

@@ -1,0 +1,223 @@
+namespace Sistema_de_Transporte
+{
+    using System;
+    using System.Collections.Generic;
+
+    // Clase base abstracta para todos los medios de transporte
+    public abstract class MedioTransporte
+    {
+        public string Nombre { get; protected set; }
+        public string TipoCombustible { get; protected set; }
+
+        protected MedioTransporte(string nombre, string tipoCombustible)
+        {
+            Nombre = nombre;
+            TipoCombustible = tipoCombustible;
+        }
+
+        // Método abstracto que será implementado por cada tipo de transporte
+        public abstract void Moverse();
+
+        public override string ToString()
+        {
+            return $"{Nombre} ({GetType().Name}) - Usa: {TipoCombustible}";
+        }
+    }
+
+    // Clase para automóviles
+    public class Automovil : MedioTransporte
+    {
+        public int Cilindrada { get; private set; }
+
+        public Automovil(string nombre, int cilindrada) : base(nombre, "Gasolina")
+        {
+            Cilindrada = cilindrada;
+        }
+
+        public override void Moverse()
+        {
+            Console.WriteLine($"{Nombre}: Conduciendo usando gasolina. Motor de {Cilindrada}cc en marcha.");
+        }
+    }
+
+    // Clase para bicicletas
+    public class Bicicleta : MedioTransporte
+    {
+        public int NumeroVelocidades { get; private set; }
+
+        public Bicicleta(string nombre, int numeroVelocidades) : base(nombre, "Esfuerzo físico")
+        {
+            NumeroVelocidades = numeroVelocidades;
+        }
+
+        public override void Moverse()
+        {
+            Console.WriteLine($"{Nombre}: Pedaleando con esfuerzo. Usando {NumeroVelocidades} velocidades.");
+        }
+    }
+
+    // Clase para scooters eléctricos
+    public class ScooterElectrico : MedioTransporte
+    {
+        public int CapacidadBateria { get; private set; }
+
+        public ScooterElectrico(string nombre, int capacidadBateria) : base(nombre, "Energía eléctrica")
+        {
+            CapacidadBateria = capacidadBateria;
+        }
+
+        public override void Moverse()
+        {
+            Console.WriteLine($"{Nombre}: Avanzando con batería eléctrica. Capacidad: {CapacidadBateria}Wh.");
+        }
+    }
+
+    // Clase para gestionar el sistema de transporte
+    public class SistemaGestionTransporte
+    {
+        private List<MedioTransporte> transportes;
+
+        public SistemaGestionTransporte()
+        {
+            transportes = new List<MedioTransporte>();
+        }
+
+        public void AgregarTransporte(MedioTransporte transporte)
+        {
+            transportes.Add(transporte);
+            Console.WriteLine($"Transporte '{transporte.Nombre}' agregado al sistema.");
+        }
+
+        public void MostrarTransportes()
+        {
+            Console.WriteLine("\n=== TRANSPORTES REGISTRADOS ===");
+            if (transportes.Count == 0)
+            {
+                Console.WriteLine("No hay transportes registrados.");
+                return;
+            }
+
+            for (int i = 0; i < transportes.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}. {transportes[i]}");
+            }
+        }
+
+        public void MoverTodos()
+        {
+            Console.WriteLine("\n=== TODOS LOS TRANSPORTES EN MOVIMIENTO ===");
+            if (transportes.Count == 0)
+            {
+                Console.WriteLine("No hay transportes registrados.");
+                return;
+            }
+
+            foreach (var transporte in transportes)
+            {
+                transporte.Moverse();
+            }
+        }
+    }
+
+    // Clase principal con el método Main
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("SISTEMA DE SIMULACIÓN DE TRANSPORTES");
+            Console.WriteLine("===================================");
+
+            var sistema = new SistemaGestionTransporte();
+            bool salir = false;
+
+            // Precargamos algunos transportes
+            sistema.AgregarTransporte(new Automovil("Toyota Corolla", 1800));
+            sistema.AgregarTransporte(new Bicicleta("Mountain Bike Trek", 21));
+            sistema.AgregarTransporte(new ScooterElectrico("Xiaomi Pro 2", 12800));
+
+            while (!salir)
+            {
+                Console.WriteLine("\n=== MENÚ PRINCIPAL ===");
+                Console.WriteLine("1. Agregar nuevo transporte");
+                Console.WriteLine("2. Mostrar transportes");
+                Console.WriteLine("3. Mover todos los transportes");
+                Console.WriteLine("4. Salir");
+                Console.Write("\nSeleccione una opción: ");
+
+                if (int.TryParse(Console.ReadLine(), out int opcion))
+                {
+                    switch (opcion)
+                    {
+                        case 1:
+                            Agregar_Transporte(sistema);
+                            break;
+                        case 2:
+                            sistema.MostrarTransportes();
+                            break;
+                        case 3:
+                            sistema.MoverTodos();
+                            break;
+                        case 4:
+                            salir = true;
+                            Console.WriteLine("Gracias por usar el sistema de transportes.");
+                            break;
+                        default:
+                            Console.WriteLine("Opción no válida.");
+                            break;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Por favor, ingrese un número válido.");
+                }
+            }
+        }
+
+        static void Agregar_Transporte(SistemaGestionTransporte sistema)
+        {
+            Console.WriteLine("\n=== AGREGAR NUEVO TRANSPORTE ===");
+            Console.WriteLine("1. Automóvil");
+            Console.WriteLine("2. Bicicleta");
+            Console.WriteLine("3. Scooter Eléctrico");
+            Console.Write("Seleccione tipo: ");
+
+            if (int.TryParse(Console.ReadLine(), out int tipo))
+            {
+                Console.Write("Ingrese nombre: ");
+                string nombre = Console.ReadLine();
+
+                switch (tipo)
+                {
+                    case 1:
+                        Console.Write("Ingrese cilindrada (cc): ");
+                        if (int.TryParse(Console.ReadLine(), out int cilindrada))
+                            sistema.AgregarTransporte(new Automovil(nombre, cilindrada));
+                        else
+                            Console.WriteLine("Cilindrada inválida.");
+                        break;
+                    case 2:
+                        Console.Write("Ingrese número de velocidades: ");
+                        if (int.TryParse(Console.ReadLine(), out int velocidades))
+                            sistema.AgregarTransporte(new Bicicleta(nombre, velocidades));
+                        else
+                            Console.WriteLine("Número de velocidades inválido.");
+                        break;
+                    case 3:
+                        Console.Write("Ingrese capacidad de batería (Wh): ");
+                        if (int.TryParse(Console.ReadLine(), out int capacidad))
+                            sistema.AgregarTransporte(new ScooterElectrico(nombre, capacidad));
+                        else
+                            Console.WriteLine("Capacidad de batería inválida.");
+                        break;
+                    default:
+                        Console.WriteLine("Tipo no válido.");
+                        break;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Por favor, ingrese un número válido.");
+            }
+        }
+    }
+}

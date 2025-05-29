@@ -1,0 +1,126 @@
+// Interfaces 
+const CATEGORIAS = [
+  'Tecnología',
+  'Salud', 
+  'Educación',
+  'Finanzas',
+  'Comercio',
+  'Otros'
+];
+
+const ESTADOS = [
+  'Borrador',
+  'Validando', 
+  'Descartada'
+];
+
+const ESTADO_COLORS = {
+  'Borrador': 'bg-yellow-100 text-yellow-800',
+  'Validando': 'bg-blue-100 text-blue-800', 
+  'Descartada': 'bg-red-100 text-red-800'
+};
+
+//Estructura de datos para ideas de negocio
+const crearIdeaVacia = () => ({
+  id: Date.now(),
+  titulo: '',
+  descripcion: '',
+  categoria: 'Tecnología',
+  estado: 'Borrador',
+  fechaCreacion: new Date().toLocaleDateString()
+});
+
+const validarIdea = (idea) => {
+  const errores = {};
+  
+  //Validación de datos
+  if (!idea.titulo || idea.titulo.length < 5 || idea.titulo.length > 100) {
+    errores.titulo = 'El título debe tener entre 5 y 100 caracteres';
+  }
+  
+  if (!idea.descripcion || idea.descripcion.length < 20 || idea.descripcion.length > 500) {
+    errores.descripcion = 'La descripción debe tener entre 20 y 500 caracteres';
+  }
+  
+  return errores;
+};
+
+export default function StartUpUCBApp() {
+  //Almacenamiento en memoria
+  const [ideas, setIdeas] = useState([
+    {
+      id: 1,
+      titulo: 'Plataforma de Tutorías Virtuales',
+      descripcion: 'Una aplicación web que conecte estudiantes con tutores especializados para clases virtuales personalizadas, incluyendo sistema de calificaciones y pagos.',
+      categoria: 'Educación',
+      estado: 'Validando',
+      fechaCreacion: '27/05/2025'
+    },
+    {
+      id: 2, 
+      titulo: 'App de Delivery Ecológico',
+      descripcion: 'Servicio de delivery que utiliza únicamente vehículos eléctricos y bicicletas, promoviendo el cuidado del medio ambiente mientras ofrece entregas rápidas.',
+      categoria: 'Tecnología',
+      estado: 'Borrador',
+      fechaCreacion: '26/05/2025'
+    }
+  ]);
+  
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [ideaEditando, setIdeaEditando] = useState(null);
+  const [ideaActual, setIdeaActual] = useState(crearIdeaVacia());
+  const [errores, setErrores] = useState({});
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(null);
+
+  //Función para crear nueva idea
+  const manejarCrearIdea = () => {
+    setIdeaActual(crearIdeaVacia());
+    setIdeaEditando(null);
+    setMostrarFormulario(true);
+    setErrores({});
+  };
+
+  //Función para editar idea existente  
+  const manejarEditarIdea = (idea) => {
+    setIdeaActual({...idea});
+    setIdeaEditando(idea.id);
+    setMostrarFormulario(true);
+    setErrores({});
+  };
+
+  //Función para guardar idea (crear o actualizar)
+  const manejarGuardarIdea = () => {
+    const erroresValidacion = validarIdea(ideaActual);
+    
+    if (Object.keys(erroresValidacion).length > 0) {
+      setErrores(erroresValidacion);
+      return;
+    }
+
+    if (ideaEditando) {
+      // Actualizar idea existente
+      setIdeas(prev => prev.map(idea => 
+        idea.id === ideaEditando ? ideaActual : idea
+      ));
+    } else {
+      // Crear nueva idea
+      setIdeas(prev => [...prev, ideaActual]);
+    }
+
+    setMostrarFormulario(false);
+    setIdeaEditando(null);
+    setErrores({});
+  };
+
+  //Función para eliminar idea
+  const manejarEliminarIdea = (id) => {
+    setIdeas(prev => prev.filter(idea => idea.id !== id));
+    setMostrarConfirmacion(null);
+  };
+
+  //Función para cancelar operación
+  const manejarCancelar = () => {
+    setMostrarFormulario(false);
+    setIdeaEditando(null);
+    setErrores({});
+  };

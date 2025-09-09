@@ -1,170 +1,253 @@
 using System;
 using System.Collections.Generic;
-// Clase que representa un libro individual
-public class Book
+// Clase base para la herencia
+public abstract class Ejemplar
 {
-    public string Name { get; set; }
-    public string Author { get; set; }
-    public bool State { get; set; }
-    public Book(string name, string author)
+    public string Title { get; set; }
+    public string AuthorDirector { get; set; }
+    public bool IsLoaned { get; set; } // true si es prestable o flase si no lo es
+    public bool State { get; set; } // true si está prestado, false si está disponible
+
+    public Ejemplar(string title, string authorDirector, bool isloaned)
     {
-        Name = name;
-        Author = author;
+        Title = title;
+        AuthorDirector = authorDirector;
+        IsLoaned = isloaned;
         State = false; // Por defecto no prestado
     }
+    public virtual void ShowInfo()
+    {
+        Console.WriteLine($"Title: {Title}, Author/Director: {AuthorDirector}, IsLoaned: {IsLoaned}, State: {(State ? "Prestado" : "Disponible")}" );
+        
+    }
+}
+
+// Clase derivada para libros
+public class Book : Ejemplar
+{
+    public string Ibsn { get; set; }
+
+    public Book(string title, string author, string Ibsn, string isloaned) : base(title, author, isloaned)
+    {
+        Ibsn = Ibsn;
+    }
+    public override void ShowInfo()
+    {
+        base.ShowInfo();
+        Console.Writeline ($"Ibsn: {Ibsn}");
+    }
+}
+
+// Clase derivada para DVD
+public class DvD : Ejemplar
+{
+    public string Title { get; set; }
+    public string Director { get; set; }
+    public int Duration { get; set; } // Duración en minutos
+    public bool State { get; set; } // true si está prestado, false si está disponible
+
+    public DvD(string title, string director, int duration)
+    {
+        Title = title;
+        Director = director;
+        Duration = duration;
+        State = false; // Por defecto no prestado
+    }
+
     public override string ToString()
     {
-        return $"Libro: {Name}, Autor: {Author}, Estado: {(State ? "Prestado" : "Disponible")}";
+        return $"DVD: {Title}, Director: {Director}, Duración: {Duration} min, Estado: {(State ? "Prestado" : "Disponible")}";
     }
 }
-// Clase que maneja la biblioteca
-public class Library
+
+// Clase derivada para Mangas
+public class Mangas : Ejemplar
 {
-    private List<Book> Books;
-    public Library()
+    public string Title { get; set; }
+    public string Author { get; set; }
+    public int Volume { get; set; }
+    public bool State { get; set; } // true si está prestado, false si está disponible
+
+    public Mangas(string title, string author, int volume)
     {
-        Books = new List<Book>();
+        Title = title;
+        Author = author;
+        Volume = volume;
+        State = false; // Por defecto no prestado
     }
 
-    public void AddBook(string name, string author)
+    public override string ToString()
     {
-        Books.Add(new Book(name, author));
-        Console.WriteLine("book added successfully!");
-    }
-
-    public int FindBookIndex(string name)
-    {
-        int i = 0;
-        foreach (Book b in Books)
-        {
-            if (b.Name == name)
-            {
-                return i;
-            }
-            i++;
-        }
-        return 8888;
-    }
-
-    // Método adicional para obtener información completa del libro
-    public void ShowBookInfo(int index)
-    {
-        if (index >= 0 && index < Books.Count)
-        {
-            Book book = Books[index];
-            Console.WriteLine($"Nombre: {book.Name}");  
-            Console.WriteLine($"Autor: {book.Author}");
-            Console.WriteLine($"Estado: {(book.State ? "Prestado" : "Disponible")}");
-        }
-    }
-
-    // Método para mostrar todos los libros
-    public void ShowAllBooks()
-    {
-        if (Books.Count == 0)
-        {
-            Console.WriteLine("No hay libros en la biblioteca.");
-            return;
-        }
-
-        Console.WriteLine("Libros en la biblioteca:");
-        for (int i = 0; i < Books.Count; i++)
-        {
-            // CORREGIDO: usar Books[i].Name en lugar de Books[i]
-            Console.WriteLine($"{i}. {Books[i].Name} - {Books[i].Author} - {(Books[i].State ? "Prestado" : "Disponible")}");
-        }
-    }
-
-    //Método para buscar un libro
-
-    public Book SearchBook(int index)
-    {
-        var bookFound = Books[index];
-        return bookFound;
-    }
-
-    public Book SearchBookByName(string name)
-    {
-        foreach (Book book in Books)
-        {
-            if (book.Name == name)
-            {
-                Console.WriteLine(book.ToString());
-                return book;
-            }
-        }
-        Console.WriteLine($"Book: '{name}' not found.");
-        return null;
-    }
-
-
-    // Método para prestar un libro
-    public void TakeitBook(int index)
-    {
-        if (index >= 0 && index < Books.Count)
-        {
-            if (!Books[index].State)
-            {
-                Console.WriteLine("Do you wanna take the book? (y/n)");
-                string respuesta = Console.ReadLine();
-                if (respuesta.ToLower() == "y")
-                {
-                    Books[index].State = true;
-                    Console.WriteLine("Book taken");
-                }
-            }
-            else
-            {
-                Console.WriteLine("Book is already taken");
-            }
-        }
-    }
-
-    public void ReturnBook(string name)
-    {
-        foreach (Book book in Books)
-        {
-            if (book.Name == name)
-            {
-                if (book.State == true)
-                {
-                    book.State = false;
-                    Console.WriteLine("Book was returned successfully!");
-                    return;
-                }
-                else
-                {
-                    Console.WriteLine("This book was already returned or was never borrowed.");
-                    return;
-                }
-            }
-        }
-        Console.WriteLine($"'{name}' does not exist.");
-    }
-
-    // Método para prestar un libro por nombre (para inicialización)
-    public void LoanBookByName(string name)
-    {
-        foreach (Book book in Books)
-        {
-            if (book.Name == name)
-            {
-                if (!book.State)
-                {
-                    book.State = true;
-                    Console.WriteLine($"'{name}' ha sido prestado automáticamente.");
-                    return;
-                }
-                else
-                {
-                    Console.WriteLine($"'{name}' ya estaba prestado.");
-                    return;
-                }
-            }
-        }
-        Console.WriteLine($"Libro '{name}' no encontrado.");
+        return $"Manga: {Title}, Autor: {Author}, Volumen: {Volume}, Estado: {(State ? "Prestado" : "Disponible")}";
     }
 }
+
+// Clase derivada para Periódicos
+public class Periodicos : Ejemplar
+{
+    public string Title { get; set; }
+    public DateTime Date { get; set; }
+
+    public Periodicos(string title, DateTime date)
+    {
+        Title = title;
+        Date = date;
+    }
+
+    public override string ToString()
+    {
+        return $"Periódico: {Title}, Fecha: {Date.ToShortDateString()}";
+    }
+}
+
+
+public class Library
+    {
+        private List<Book> Books;
+        public Library()
+        {
+            Books = new List<Book>();
+        }
+
+        public void AddBook(string name, string author)
+        {
+            Books.Add(new Book(name, author));
+            Console.WriteLine("book added successfully!");
+        }
+
+        public int FindBookIndex(string name)
+        {
+            int i = 0;
+            foreach (Book b in Books)
+            {
+                if (b.Name == name)
+                {
+                    return i;
+                }
+                i++;
+            }
+            return 8888;
+        }
+
+        // Método adicional para obtener información completa del libro
+        public void ShowBookInfo(int index)
+        {
+            if (index >= 0 && index < Books.Count)
+            {
+                Book book = Books[index];
+                Console.WriteLine($"Nombre: {book.Name}");
+                Console.WriteLine($"Autor: {book.Author}");
+                Console.WriteLine($"Estado: {(book.State ? "Prestado" : "Disponible")}");
+            }
+        }
+
+        // Método para mostrar todos los libros
+        public void ShowAllBooks()
+        {
+            if (Books.Count == 0)
+            {
+                Console.WriteLine("No hay libros en la biblioteca.");
+                return;
+            }
+
+            Console.WriteLine("Libros en la biblioteca:");
+            for (int i = 0; i < Books.Count; i++)
+            {
+                // CORREGIDO: usar Books[i].Name en lugar de Books[i]
+                Console.WriteLine($"{i}. {Books[i].Name} - {Books[i].Author} - {(Books[i].State ? "Prestado" : "Disponible")}");
+            }
+        }
+
+        //Método para buscar un libro
+
+        public Book SearchBook(int index)
+        {
+            var bookFound = Books[index];
+            return bookFound;
+        }
+
+        public Book SearchBookByName(string name)
+        {
+            foreach (Book book in Books)
+            {
+                if (book.Name == name)
+                {
+                    Console.WriteLine(book.ToString());
+                    return book;
+                }
+            }
+            Console.WriteLine($"Book: '{name}' not found.");
+            return null;
+        }
+
+
+        // Método para prestar un libro
+        public void TakeitBook(int index)
+        {
+            if (index >= 0 && index < Books.Count)
+            {
+                if (!Books[index].State)
+                {
+                    Console.WriteLine("Do you wanna take the book? (y/n)");
+                    string respuesta = Console.ReadLine();
+                    if (respuesta.ToLower() == "y")
+                    {
+                        Books[index].State = true;
+                        Console.WriteLine("Book taken");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Book is already taken");
+                }
+            }
+        }
+
+        public void ReturnBook(string name)
+        {
+            foreach (Book book in Books)
+            {
+                if (book.Name == name)
+                {
+                    if (book.State == true)
+                    {
+                        book.State = false;
+                        Console.WriteLine("Book was returned successfully!");
+                        return;
+                    }
+                    else
+                    {
+                        Console.WriteLine("This book was already returned or was never borrowed.");
+                        return;
+                    }
+                }
+            }
+            Console.WriteLine($"'{name}' does not exist.");
+        }
+
+        // Método para prestar un libro por nombre (para inicialización)
+        public void LoanBookByName(string name)
+        {
+            foreach (Book book in Books)
+            {
+                if (book.Name == name)
+                {
+                    if (!book.State)
+                    {
+                        book.State = true;
+                        Console.WriteLine($"'{name}' ha sido prestado automáticamente.");
+                        return;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"'{name}' ya estaba prestado.");
+                        return;
+                    }
+                }
+            }
+            Console.WriteLine($"Libro '{name}' no encontrado.");
+        }
+    }
 
 class Program
 {
@@ -198,3 +281,20 @@ class Program
         library.SearchBookByName("1984"); // Buscar acerca del primer libro
     }
 } 
+
+
+/* Aplicacion con Herencia:
+
+* Requisitos extendidos:
+
+Múltiples tipos de medios: libros, DVD y revistas.
+
+Diferentes reglas de préstamo: cada tipo de medio tiene diferentes períodos de préstamo.
+
+Propiedades especializadas: los DVD tienen directores y duración, las revistas tienen números de edición, etc.
+
+Tarifas por mora variadas: diferentes estructuras de penalización para cada tipo de medio.
+
+Formatos de visualización: cada tipo de medio muestra información diferente. 
+
+*/

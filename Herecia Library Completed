@@ -1,0 +1,397 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using static Ejemplar;
+// Clase base para la herencia
+public abstract class Ejemplar
+{
+    public string Title { get; set; }
+    public string AuthorDirector { get; set; }
+    public bool IsLoaned { get; set; } // true si es prestable o false si no lo es
+    public bool State { get; set; } // true si está prestado, false si está disponible
+    public DateTime? LoanDate { get; set; } // Fecha de prestamo
+    public DateTime? DueDate { get; set; } // Fecha de vencimineto
+
+        public Ejemplar(string title, string authorDirector, bool isloaned)
+        {
+        Title = title;
+        AuthorDirector = authorDirector;
+        IsLoaned = isloaned;
+        State = false; // Por defecto no prestado
+        LoanDate = null;
+        DueDate = null;
+        }
+    public virtual void ShowInfo()
+    {
+        Console.WriteLine($"Title: {Title}, Author/Director: {AuthorDirector}, IsLoaned: {IsLoaned}, State: {(State ? "Prestado" : "Disponible")}");
+        if (State && LoanDate.HasValue && DueDate.HasValue) //Confrimar para que no haya valores nulls
+        {
+            Console.WriteLine($"Loan Date: {LoanDate:dd/MM/yyyy}, Due Date: {DueDate:dd/MM/yyyy}");
+        }
+    }
+
+
+    //Metodos para prestamos
+
+    //1. Calcular la penalizacion de cada ejemplar
+    public abstract decimal CalculatePenality();
+
+    //2. Obtener dias prestados
+    public virtual int GetLoanDays() => 7;
+
+    //3. Ver si esta atrasado
+    public bool IsOverDue()
+    {   
+        if (!State || !DueDate.HasValue)
+        {
+            return false;
+        }
+        else {
+            return DateTime.Now > DueDate.Value;
+        }
+    }
+
+    //4. Obtener dias atrasados
+    public int GetOverDueDays()
+    {
+        if (!IsOverDue())
+            return 0;
+        else
+        {
+            return (DateTime.Now - DueDate.Value).Days;
+        }
+    
+    }
+
+         
+    // Clase derivada para libros
+    public class Book : Ejemplar
+    {
+       public string Isbn { get; set; }
+        private const decimal Daily_Penalty = 0.50m; //costo por dia de atraso
+        private const decimal Max_Penalty = 15.00m; //penalizacion maxima 
+
+        public Book(string title, string author, string isbn, bool isloaned) : base(title, author, isloaned)
+        {
+            Isbn = isbn;
+        }
+            public override int GetLoanDays() => 14; //14 dias de prestamo para un libro
+
+            public override decimal CalculatePenality()
+        {
+            if (!IsOverDue()) 
+                return 0;
+
+            int overdueDays = GetOverDueDays();
+            decimal penalty = overdueDays * Daily_Penalty;
+
+            // Aplicar penalización máxima
+            if (penalty > Max_Penalty)
+                penalty = Max_Penalty;
+
+            Console.WriteLine($"[LIBRO] {Title}: {overdueDays} días de atraso × ${Daily_Penalty} = ${penalty}");
+            return penalty;
+        }
+
+        public override string ToString()
+        {
+            return $"Libro - Title: {Title}, Author: {AuthorDirector}, ISBN: {Isbn}, IsLoaned: {IsLoaned}, State: {(State ? "Prestado" : "Disponible")}";
+        }
+
+        public override void ShowInfo()
+        {
+            Console.WriteLine($"ISBN: {Isbn}");
+            base.ShowInfo();
+        }
+        
+    }
+
+    // Clase derivada para DVD
+    public class DvD : Ejemplar
+    {
+        public int Duration { get; set; } // Duración en minutos
+        private const decimal Daily_Penalty = 1.00m; //Costo por dia de atraso
+        private const decimal Max_Penalty = 25.00m; //Maxima penalizacion por disco
+
+        public DvD(string title, string director, int duration, bool isloaned) : base(title, director, isloaned)
+        {
+            Duration = duration;
+        }
+        public override int GetLoanDays() => 3; //3 dias de prestamo para un DvD
+        public override decimal CalculatePenality()
+        {
+            if (!IsOverDue())
+                return 0;
+
+            int overdueDays = GetOverDueDays();
+            decimal penalty = overdueDays * Daily_Penalty;
+
+            //Penalizacion diferente para DvD's
+            //Penalizacion progresiva
+
+            if (overdueDays > 7)
+            {
+                decimal Extra_Days = overdueDays - 7;
+                penalty = (7 * Daily_Penalty) + (Extra_Days * Daily_Penalty * 2);
+            }
+
+            // Aplicar penalización máxima
+            if (penalty > Max_Penalty)
+                penalty = Max_Penalty;
+
+            Console.WriteLine($"[DISCO] {Title}: {overdueDays} días de atraso. Penalizacion: ${penalty}");
+            return penalty;
+        }
+
+        public override string ToString()
+        {
+            return $"DVD - Title: {Title}, Director: {AuthorDirector}, Duration: {Duration} min, IsLoaned: {IsLoaned}, State: {(State ? "Prestado" : "Disponible")}";
+        }
+
+        public override void ShowInfo()
+        {
+            Console.WriteLine($"Duration:¨{Duration} minutes");
+            base.ShowInfo();
+        }
+    }
+
+    // Clase derivada para Mangas
+    public class Mangas : Ejemplar
+    {
+       public int Volume { get; set; }
+         private const decimal Daily_Penalty = 0.15m; //Costo por dia de atraso
+         private const decimal Max_Penalty = 10.00m; //Maxima penalizacion por Manga
+
+       public Mangas(string title, string author, int volume, bool isloaned) : base(title, author, isloaned)
+       {
+        Volume = volume;
+       }
+        public override int GetLoanDays() => 8; // 8 dias de prestamo para un Manga
+        public override decimal CalculatePenality()
+        {
+            if (!IsOverDue())
+                return 0;
+            int overdueDays = GetOverDueDays();
+            decimal penalty = overdueDays * Daily_Penalty;
+
+            //Penalizacion diferente para Mangas
+            //Penalizacion reducida los tres primeros dias 
+            
+            if (overdueDays >= 3)
+            {
+                penalty = overdueDays * (Daily_Penalty * 0.50m); //Se le da un descuento del 50% a los tres dias cumplidos
+            }
+
+            // Aplicar penalización máxima
+            if (penalty > Max_Penalty)
+                penalty = Max_Penalty;
+
+            Console.WriteLine($"[MANGA] {Title} VOL. {Volume}: {overdueDays} días de atraso. Penalizacion: ${penalty}");
+            return penalty;
+
+        }
+
+        public override string ToString()
+        {
+        return $"Manga - Title: {Title}, Author: {AuthorDirector}, Volume: {Volume}, IsLoaned: {IsLoaned}, State: {(State ? "Prestado" : "Disponible")}";
+        }
+
+        public override void ShowInfo()
+        {
+        Console.WriteLine($"Volume: {Volume}");
+        base.ShowInfo();
+        }
+    }
+
+    // Clase derivada para Periódicos
+    public class Periodicos : Ejemplar
+    {
+        public DateTime Date { get; set; }
+        private const decimal Daily_Penalty = 0.10m; //Costo por dia de atraso
+        private const decimal Max_Penalty = 3.00m; //Penalizacion maxima para un Periodico
+
+        public Periodicos(string title, string author, bool isloaned, DateTime date) : base(title, author, isloaned = false)
+        {
+            Date = date;
+        }
+        public override int GetLoanDays() => 1; // 1 dia de prestamo para un Periodico
+        public override decimal CalculatePenality()
+        {
+            if (!IsOverDue()) 
+                return 0;
+
+            int overdueDays = GetOverDueDays();
+            decimal penalty = overdueDays * Daily_Penalty;
+
+            //Penalizacion diferente para los Periodicos
+            // Los periódicos tienen penalización fija después de 10 días
+            if (overdueDays >= 10)
+            {
+                penalty = Max_Penalty;
+            }
+
+            Console.WriteLine($"[PERIÓDICO] {Title}: {overdueDays} días de atraso = ${penalty}");
+            return penalty;
+        }
+
+        public override string ToString()
+        {
+            return $"Periódico - Title: {Title}, Author: {AuthorDirector}, Date: {Date:dd/MM/yyyy}, IsLoaned: {IsLoaned}, State: {(State ? "Prestado" : "Disponible")}";
+        }
+
+        public override void ShowInfo()
+        {
+            Console.WriteLine($"Date: {Date: dd/MM/yyyy}");
+            base.ShowInfo();
+        }
+
+    }
+}
+
+//Atributos para el main
+public class Library
+{
+    private List<Ejemplar> ejemplares;
+    public Library()
+    {
+        ejemplares = new List<Ejemplar>();
+    }
+
+    public void AddEjemplar(Ejemplar ejemplar)
+    {
+        ejemplares.Add(ejemplar);
+        Console.WriteLine($"Added: {ejemplar.GetType().Name} - {ejemplar.Title}");
+    }
+
+    //Metodo para prestar un Ejemplar
+    public bool LoanEjemplar(string title)
+    {
+        foreach (var ejemplar in ejemplares)
+        {
+            if (ejemplar.Title.Equals(title, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!ejemplar.IsLoaned)
+                {
+                    Console.WriteLine($"{ejemplar.Title} no es prestable.");
+                    return false;
+                }
+
+                if (ejemplar.State)
+                {
+                    Console.WriteLine($"{ejemplar.Title} ya está prestado.");
+                    return false;
+                }
+                ejemplar.State = true;
+                ejemplar.LoanDate = DateTime.Now;
+                ejemplar.DueDate = DateTime.Now.AddDays(ejemplar.GetLoanDays());
+
+                Console.WriteLine($" {ejemplar.Title} has been successfully loaned.");
+                Console.WriteLine($" Return Date: {ejemplar.DueDate:dd/MM/yyyy}");
+                return true;
+            }
+        }
+        Console.WriteLine($"Ejemplar '{title}' no found.");
+        return false;
+    }
+
+    // Método para devolver un ejemplar
+    public bool ReturnEjemplar(string title)
+    {
+        foreach (var ejemplar in ejemplares)
+        {
+            if (ejemplar.Title.Equals(title, StringComparison.OrdinalIgnoreCase) && ejemplar.State)
+            {
+                decimal penalty = ejemplar.CalculatePenality();
+                ejemplar.State = false;
+                ejemplar.LoanDate = null;
+                ejemplar.DueDate = null;
+
+                Console.WriteLine($" {ejemplar.Title} returned successfully.");
+                if (penalty > 0)
+                {
+                    Console.WriteLine($" Penalty Total: ${penalty}");
+                }
+                return true;
+            }
+        }
+        Console.WriteLine($"Ejemplar '{title}' is missing or is not on loan.");
+        return false;
+    }
+
+    // Método para mostrar todos los ejemplares
+    public void ShowAllEjemplares()
+    {
+        if (ejemplares.Count == 0)
+        {
+            Console.WriteLine("No hay ejemplares en la biblioteca.");
+            return;
+        }
+
+        Console.WriteLine("\n=== EJEMPLARES EN LA BIBLIOTECA ===");
+        for (int i = 0; i < ejemplares.Count; i++)
+        {
+            var ejemplar = ejemplares[i];
+            Console.WriteLine($"{i + 1}. {ejemplar}");
+            if (ejemplar.IsOverDue())
+            {
+                Console.WriteLine($" ATRASADO: {ejemplar.GetOverDueDays()} days");
+            }
+        }
+    }
+}
+
+class Program
+{
+    public static void Main(string[] args)
+    {
+        Library library = new Library();
+
+        // Agregar diferentes tipos de ejemplares
+        library.AddEjemplar(new Book("Don Quijote", "Miguel de Cervantes", "978-84-376-0494-7", true));
+        library.AddEjemplar(new Book("Cien años de soledad", "Gabriel García Márquez", "978-84-376-0495-8", true));
+        library.AddEjemplar(new DvD("El Padrino", "Francis Ford Coppola", 175, true));
+        library.AddEjemplar(new DvD("Titanic", "James Cameron", 194, true));
+        library.AddEjemplar(new Mangas("Naruto", "Masashi Kishimoto", 1, true));
+        library.AddEjemplar(new Mangas("One Piece", "Eiichiro Oda", 1, true));
+        library.AddEjemplar(new Periodicos("El Universal", "Editorial El Universal", false, DateTime.Now.AddDays(-1)));
+        library.AddEjemplar(new Periodicos("La Razón", "Editorial La Razón", false, DateTime.Now));
+        library.AddEjemplar(new Periodicos("Los Tiempos", "Editorial Los Tiempos", false, DateTime.Now.AddDays(-2)));
+
+        // Simular préstamos (no incluye periódicos)
+        Console.WriteLine("\n=== SIMULANDO PRÉSTAMOS ===");
+        library.LoanEjemplar("Don Quijote");
+        library.LoanEjemplar("El Padrino");
+        library.LoanEjemplar("Naruto");
+
+        // Intentar prestar un periódico
+        Console.WriteLine("\n=== INTENTANDO PRESTAR UN PERIÓDICO ===");
+        library.LoanEjemplar("El Universal");
+
+        Console.WriteLine("\n=== TODOS LOS EJEMPLARES ===");
+        library.ShowAllEjemplares();
+
+
+        Console.WriteLine("\n=== DEVOLVIENDO EJEMPLARES ===");
+        library.ReturnEjemplar("Don Quijote");
+        library.ReturnEjemplar("El Padrino");
+
+        Console.WriteLine("\n=== ESTADO FINAL ===");
+        library.ShowAllEjemplares();
+    }
+}
+
+
+/* Aplicacion con Herencia:
+
+* Requisitos extendidos:
+
+Diferentes reglas de préstamo: cada tipo de medio tiene diferentes períodos de préstamo.
+
+Propiedades especializadas: los DVD tienen directores y duración, las revistas tienen números de edición, etc.
+
+Tarifas por mora variadas: diferentes estructuras de penalización para cada tipo de medio.
+
+Formatos de visualización: cada tipo de medio muestra información diferente. 
+
+*/
